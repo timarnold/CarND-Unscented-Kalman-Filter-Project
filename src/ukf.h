@@ -3,6 +3,7 @@
 
 #include "measurement_package.h"
 #include "Eigen/Dense"
+#include "tools.h"
 #include <vector>
 #include <string>
 #include <fstream>
@@ -10,9 +11,9 @@
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
-class UKF {
+class UKF
+{
 public:
-
   ///* initially set to false, set to true in first call of ProcessMeasurement
   bool is_initialized_;
 
@@ -24,15 +25,26 @@ public:
 
   ///* state vector: [pos1 pos2 vel_abs yaw_angle yaw_rate] in SI units and rad
   VectorXd x_;
+  VectorXd z_pred_;
+
+  double nis_epsilon_;
 
   ///* state covariance matrix
   MatrixXd P_;
+  MatrixXd S_;
+
+  MatrixXd Q_;
+
+  MatrixXd R_radar_;
+  MatrixXd R_laser_;
 
   ///* predicted sigma points matrix
   MatrixXd Xsig_pred_;
 
+  MatrixXd Zsig_;
+
   ///* time when the state is true, in us
-  long long time_us_;
+  long long previous_timestamp_;
 
   ///* Process noise standard deviation longitudinal acceleration in m/s^2
   double std_a_;
@@ -53,20 +65,22 @@ public:
   double std_radphi_;
 
   ///* Radar measurement noise standard deviation radius change in m/s
-  double std_radrd_ ;
-
-  ///* Weights of sigma points
-  VectorXd weights_;
+  double std_radrd_;
 
   ///* State dimension
   int n_x_;
+
+  int n_z_radar_;
+
+  int n_z_laser_;
+
+  int n_sigma_;
 
   ///* Augmented state dimension
   int n_aug_;
 
   ///* Sigma point spreading parameter
   double lambda_;
-
 
   /**
    * Constructor
@@ -89,7 +103,7 @@ public:
    * matrix
    * @param delta_t Time between k and k+1 in s
    */
-  void Prediction(double delta_t);
+  void Predict(double delta_t);
 
   /**
    * Updates the state and the state covariance matrix using a laser measurement
@@ -102,6 +116,20 @@ public:
    * @param meas_package The measurement at k+1
    */
   void UpdateRadar(MeasurementPackage meas_package);
+
+private:
+  void UpdateBelief(MeasurementPackage meas_package, MatrixXd Tc);
+  MatrixXd GenerateAugmentedSigmaPoints(VectorXd x, MatrixXd P, MatrixXd Q, int n_x, int n_aug, int lambda);
+  MatrixXd GeneratePredictedSigmaPoints(MatrixXd Xsig_aug, double delta_t, int n_x, int n_aug, int lambda);
+  MatrixXd PredictedMeanAndCovarianceFromSigmaPoints(MatrixXd Xsig_pred, VectorXd weights, int n_x, int n_aug, int lambda);
+  MatrixXd RadarMeasurementSigmaPointsForPredictedSigmaPoints(MatrixXd Xsig_pred, int n_z, int n_aug);
+  MatrixXd LaserMeasurementSigmaPointsForPredictedSigmaPoints(MatrixXd Xsig_pred, int n_z, int n_aug);
+  MatrixXd PredictedMeasurementAndCovarianceForMeasurementSigmaPoints(MatrixXd Zsig, VectorXd weights, MatrixXd R, int n_z, int n_aug);
+
+  Tools tools_;
+
+  ///* Weights of sigma points
+  VectorXd weights_;
 };
 
 #endif /* UKF_H */
