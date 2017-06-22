@@ -9,7 +9,7 @@ Tools::Tools() {}
 
 Tools::~Tools() {}
 
-VectorXd Tools::GenerateWeights(int n_aug, int lambda)
+VectorXd Tools::GenerateWeights(int n_aug, double lambda)
 {
   int n_sigma = 2 * n_aug + 1;
   VectorXd weights = VectorXd(n_sigma);
@@ -25,10 +25,10 @@ VectorXd Tools::GenerateWeights(int n_aug, int lambda)
 
 double Tools::NormalizeAngle(double angle)
 {
-//    std::cout << "angle is" << angle << std::endl;
-  while (angle >=  M_PI) angle -= 2. * M_PI;
-  while (angle <= -M_PI) angle += 2. * M_PI;
-//    std::cout << "returned adjusted..." << angle << std::endl;
+  while (angle >= M_PI)
+    angle -= 2. * M_PI;
+  while (angle <= -M_PI)
+    angle += 2. * M_PI;
   return angle;
 }
 

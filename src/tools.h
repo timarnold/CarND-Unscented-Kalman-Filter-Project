@@ -28,7 +28,7 @@ public:
   /**
   * Generate sigma points weights
   */
-  VectorXd GenerateWeights(int n_aug, int lambda);
+  VectorXd GenerateWeights(int n_aug, double lambda);
 
   MatrixXd GenerateAugmentedSigmaPoints(VectorXd x, MatrixXd P, MatrixXd Q, int n_x, int n_aug, int lambda);
 
